@@ -2,7 +2,6 @@ doctype html
 html(lang='en')
 
     head
-
         meta(charset='utf-8')
         meta(name='viewport', content='width=device-width, initial-scale=1, shrink-to-fit=no')
         meta(name='description', content='Coming soon page for tango.io')
@@ -38,10 +37,10 @@ html(lang='en')
                         | We're working hard to finish the development of this site. Sign up below to receive updates and to be notified when we launch!
                     
                     // Web3Forms Integration
-                    form(action='https://api.web3forms.com/submit', method='POST')
+                    form#contactForm
                         input(type='hidden', name='access_key', value='8856d92b-9733-4329-8619-b788a39c1960')
                         
-                        .row.input-group-newsletter
+                        #inputGroup.row.input-group-newsletter
                             .col
                                 input#email.form-control(
                                     name='email',
@@ -52,6 +51,9 @@ html(lang='en')
                                 )
                             .col-auto
                                 button#submitButton.btn.btn-primary(type='submit') Notify Me!
+                        
+                        // Result message container
+                        #resultMessage.mt-3.d-none.fw-bolder.text-center
 
         // Social Icons
         .social-icons
@@ -68,3 +70,52 @@ html(lang='en')
 
         // Core theme JS
         script(src='js/scripts.js')
+        
+        // Form submission script via Fetch API
+        script.
+            const form = document.getElementById('contactForm');
+            const result = document.getElementById('resultMessage');
+            const inputGroup = document.getElementById('inputGroup');
+            const btn = document.getElementById('submitButton');
+
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                btn.disabled = true;
+                btn.innerHTML = 'Sending...';
+
+                const formData = new FormData(form);
+                const object = Object.fromEntries(formData);
+                const json = JSON.stringify(object);
+
+                fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: json
+                })
+                .then(async (response) => {
+                    if (response.status === 200) {
+                        inputGroup.classList.add('d-none');
+                        result.classList.remove('d-none');
+                        result.classList.add('text-success');
+                        result.innerHTML = 'Thank you! You will be notified.';
+                    } else {
+                        result.classList.remove('d-none');
+                        result.classList.add('text-danger');
+                        result.innerHTML = 'Error sending message!';
+                        btn.disabled = false;
+                        btn.innerHTML = 'Notify Me!';
+                    }
+                })
+                .catch(error => {
+                    console.log(error);
+                    result.classList.remove('d-none');
+                    result.classList.add('text-danger');
+                    result.innerHTML = 'Something went wrong!';
+                    btn.disabled = false;
+                    btn.innerHTML = 'Notify Me!';
+                });
+            });
